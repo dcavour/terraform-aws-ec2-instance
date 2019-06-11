@@ -3,6 +3,12 @@ variable "name" {
   type        = string
 }
 
+variable "names" {
+  description = "The list names to be used on all resoruces as a prefix"
+  type        = list(string)
+  default     = []
+}
+
 variable "instance_count" {
   description = "Number of instances to launch"
   type        = number
@@ -100,6 +106,12 @@ variable "user_data" {
   description = "The user data to provide when launching the instance"
   type        = string
   default     = ""
+}
+
+variable "user_data_list" {
+  description = "The user data to provide when launching the corresponding instances"
+  type        = list(string)
+  default     = []
 }
 
 variable "iam_instance_profile" {

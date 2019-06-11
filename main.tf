@@ -1,8 +1,13 @@
 locals {
-  is_t_instance_type = replace(var.instance_type, "/^t[23]{1}\\..*$/", "1") == "1" ? 1 : 0
+  is_t_instance_type = replace(var.instance_type, "/^t[23]{1}\\..*$/", "1") == "1" ? "1" : "0"
 
-  instance_count   = var.instance_count * (1 - local.is_t_instance_type)
-  t_instance_count = var.instance_count * local.is_t_instance_type
+  ncount             = length(var.names)
+  icount             = local.ncount > 0 ? local.ncount : var.instance_count
+  ucount             = length(var.user_data_list)
+  use_num_suffix     = local.ncount > 0 ? false : var.use_num_suffix
+
+  instance_count     = local.icount * (1 - local.is_t_instance_type)
+  t_instance_count   = local.icount * local.is_t_instance_type
 }
 
 ######
@@ -13,8 +18,8 @@ resource "aws_instance" "this" {
 
   ami           = var.ami
   instance_type = var.instance_type
-  user_data     = var.user_data
-  subnet_id = element(
+  user_data     = local.ucount > 0 ? element(var.user_data_list, count.index) : var.user_data
+  subnet_id     = element(
     distinct(compact(concat([var.subnet_id], var.subnet_ids))),
     count.index,
   )
@@ -70,14 +75,14 @@ resource "aws_instance" "this" {
 
   tags = merge(
     {
-      "Name" = var.instance_count > 1 || var.use_num_suffix ? format("%s-%d", var.name, count.index + 1) : var.name
+      "Name" = local.ncount > 0 ? element(var.names, count.index) : local.instance_count > 1 || local.use_num_suffix ? format("%s-%d", var.name, count.index + 1) : var.name
     },
     var.tags,
   )
 
   volume_tags = merge(
     {
-      "Name" = var.instance_count > 1 || var.use_num_suffix ? format("%s-%d", var.name, count.index + 1) : var.name
+      "Name" = local.ncount > 0 ? element(var.names, count.index) : local.instance_count > 1 || local.use_num_suffix ? format("%s-%d", var.name, count.index + 1) : var.name
     },
     var.volume_tags,
   )
@@ -99,7 +104,7 @@ resource "aws_instance" "this_t2" {
 
   ami           = var.ami
   instance_type = var.instance_type
-  user_data     = var.user_data
+  user_data     = local.ucount > 0 ? element(var.user_data_list, count.index) : var.user_data
   subnet_id = element(
     distinct(compact(concat([var.subnet_id], var.subnet_ids))),
     count.index,
@@ -160,14 +165,14 @@ resource "aws_instance" "this_t2" {
 
   tags = merge(
     {
-      "Name" = var.instance_count > 1 || var.use_num_suffix ? format("%s-%d", var.name, count.index + 1) : var.name
+      "Name" = local.ncount > 0 ? element(var.names, count.index) : local.t_instance_count > 1 || local.use_num_suffix ? format("%s-%d", var.name, count.index + 1) : var.name
     },
     var.tags,
   )
 
   volume_tags = merge(
     {
-      "Name" = var.instance_count > 1 || var.use_num_suffix ? format("%s-%d", var.name, count.index + 1) : var.name
+      "Name" = local.ncount > 0 ? element(var.names, count.index) : local.t_instance_count > 1 || local.use_num_suffix ? format("%s-%d", var.name, count.index + 1) : var.name
     },
     var.volume_tags,
   )
