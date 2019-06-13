@@ -23,7 +23,7 @@ output "id" {
 
 output "names" {
   description = "List of names of instances"
-  value       = local.names
+  value       = var.names
 }
 
 output "availability_zone" {
