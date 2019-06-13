@@ -21,6 +21,11 @@ output "id" {
   value       = local.this_id
 }
 
+output "names" {
+  description = "List of names of instances"
+  value       = local.names
+}
+
 output "availability_zone" {
   description = "List of availability zones of instances"
   value       = local.this_availability_zone
